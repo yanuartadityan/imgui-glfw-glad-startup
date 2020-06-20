@@ -4,6 +4,3 @@
 [submodule "modules/imgui"]
 	path = modules/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "modules/glad"]
-	path = modules/glad
-	url = https://github.com/Dav1dde/glad.git
