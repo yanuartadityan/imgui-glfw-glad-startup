@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+GENERATOR=Xcode
+
+mkdir -p build
+cd build
+cmake .. -G "$GENERATOR"

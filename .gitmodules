@@ -1,6 +1,9 @@
 [submodule "modules/glfw"]
-		path = modules/glfw
-		url = https://github.com/glfw/glfw.git
+	path = modules/glfw
+	url = https://github.com/glfw/glfw.git
 [submodule "modules/imgui"]
-		path = modules/imgui
-		url = https://github.com/ocornut/imgui.git
+	path = modules/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "modules/glad"]
+	path = modules/glad
+	url = https://github.com/Dav1dde/glad.git
