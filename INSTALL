@@ -13,8 +13,6 @@ cp src/glad.c ../../../src/glad/glad.c
 
 cd ../../../
 
-pwd
-
-#mkdir -p build
-#cd build
-#cmake .. -G "$GENERATOR"
+mkdir -p build
+cd build
+cmake .. -G "$GENERATOR"
