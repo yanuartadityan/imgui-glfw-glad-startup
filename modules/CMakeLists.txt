@@ -6,7 +6,7 @@ add_subdirectory(glad)
 
 # for imgui - header only
 get_filename_component(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
-set(IMGUI_SRC_DIR ${THIRD_PARTY_DIR}/imgui)
+set(IMGUI_SRC_DIR ${THIRD_PARTY_DIR}/modules/imgui)
 
 list(APPEND IMGUI_PUBLIC_HEADERS
 		"${IMGUI_SRC_DIR}/imgui.h"

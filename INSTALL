@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-GENERATOR=Xcode
+GENERATOR="Unix Makefiles"
 
 mkdir -p build
 cd build

@@ -1,0 +1,1 @@
+/usr/bin/c++  -g     -o imgui-glfw-glad-project ../modules/libimgui.a ../modules/glfw/src/libglfw3.a ../modules/glad/libglad.a -lpthread /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl 
