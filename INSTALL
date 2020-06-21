@@ -2,6 +2,19 @@
 
 GENERATOR="Unix Makefiles"
 
-mkdir -p build
-cd build
+mkdir modules/glad/build
+cd modules/glad/build
 cmake .. -G "$GENERATOR"
+make
+
+cp -R include/* ../../../src
+cp src/glad.c ../../../src/glad/glad.c
+
+
+cd ../../../
+
+pwd
+
+#mkdir -p build
+#cd build
+#cmake .. -G "$GENERATOR"
