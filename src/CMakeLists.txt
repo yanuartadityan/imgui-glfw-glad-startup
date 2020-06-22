@@ -24,7 +24,7 @@ set(NAME imgui-glfw-glad-project)
 add_executable(${NAME} ${MAIN_APP_SOURCES})
 target_include_directories(${NAME} PUBLIC ${MAIN_APP_INCLUDE_DIRS})
 target_link_libraries(${NAME} 
-    ${THIRD_PARTY_DIR}/build/modules/libimgui.a
+    imgui
     glfw
     )
 
