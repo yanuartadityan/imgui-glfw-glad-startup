@@ -28,7 +28,7 @@ int main(int, char**)
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
-    gladLoadGL((GLADloadfunc) glfwGetProcAddress);
+    gladLoadGL();
 
     //gl3wInit();
 

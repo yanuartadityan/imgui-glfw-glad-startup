@@ -1,6 +1,9 @@
 get_filename_component(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 set(MODULES_INCLUDE_DIR ${THIRD_PARTY_DIR}/modules)
 
+message(${THIRD_PARTY_DIR})
+message(${MODULES_INCLUDE_DIR})
+
 list(APPEND MAIN_APP_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${MODULES_INCLUDE_DIR}/imgui"
@@ -17,14 +20,11 @@ list(APPEND MAIN_APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/KHR/khrplatform.h
     )
 
-set(MAIN_APP_LIBRARIES
-    imgui
-    glfw
-    glad
-    )
-
 set(NAME imgui-glfw-glad-project)
 add_executable(${NAME} ${MAIN_APP_SOURCES})
 target_include_directories(${NAME} PUBLIC ${MAIN_APP_INCLUDE_DIRS})
-target_link_libraries(${NAME} ${MAIN_APP_LIBRARIES})
+target_link_libraries(${NAME} 
+    ${THIRD_PARTY_DIR}/build/modules/libimgui.a
+    glfw
+    )
 

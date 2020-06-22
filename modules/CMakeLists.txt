@@ -24,17 +24,14 @@ list(APPEND IMGUI_SOURCES
 		"${IMGUI_SRC_DIR}/imgui.cpp"
 		"${IMGUI_SRC_DIR}/imgui_draw.cpp"
 		"${IMGUI_SRC_DIR}/imgui_demo.cpp"
+		"${IMGUI_SRC_DIR}/imgui_widgets.cpp"
 		)
 
 list(APPEND IMGUI_PUBLIC_INCLUDE_DIRS
 		${IMGUI_SRC_DIR}
 		)
 
-list(APPEND IMGUI_PRIVATE_INCLUDE_DIR)
-
 list(APPEND IMGUI_PUBLIC_LIBRARIES)
-
-list(APPEND IMGUI_PRIVATE_LIBRARIES)
 
 set(NAME imgui)
 add_library(${NAME} STATIC ${IMGUI_SOURCES})
