@@ -11,8 +11,8 @@ list(APPEND MAIN_APP_INCLUDE_DIRS
 
 list(APPEND MAIN_APP_SOURCES
     main.cpp
-    ${MODULES_INCLUDE_DIR}/imgui/examples/imgui_impl_opengl3.h
-    ${MODULES_INCLUDE_DIR}/imgui/examples/imgui_impl_opengl3.cpp
+    imgui_impl_opengl3.h
+    imgui_impl_opengl3.cpp
     ${MODULES_INCLUDE_DIR}/imgui/examples/imgui_impl_glfw.h
     ${MODULES_INCLUDE_DIR}/imgui/examples/imgui_impl_glfw.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/glad/glad.h

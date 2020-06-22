@@ -1,7 +1,6 @@
 #! /usr/bin/env bash
 
 GENERATOR="Unix Makefiles"
-#GENERATOR="Xcode"
 
 mkdir modules/glad/build
 cd modules/glad/build
