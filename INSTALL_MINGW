@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+
+GENERATOR="MinGW Makefiles"
+
+mkdir modules/glad/build
+cd modules/glad/build
+cmake .. -G "$GENERATOR"
+make
+
+cp -R include/* ../../../src
+cp src/glad.c ../../../src/glad/glad.c
+
+
+cd ../../../
+
+mkdir -p build
+cd build
+cmake .. -G "$GENERATOR"
