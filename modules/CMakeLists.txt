@@ -4,6 +4,9 @@ add_subdirectory(glfw)
 # for glad - has cmake buildchain
 add_subdirectory(glad)
 
+# for opencv - has cmake buildchain
+add_subdirectory(opencv)
+
 # for imgui - header only
 get_filename_component(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 set(IMGUI_SRC_DIR ${THIRD_PARTY_DIR}/modules/imgui)
