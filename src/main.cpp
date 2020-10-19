@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "cv_video.h"
+
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -12,8 +14,11 @@ static void glfw_error_callback(int error, const char* description)
 
 void StyleColorsSofty(ImGuiStyle* dst = NULL);
 
-int main(int, char**)
+int main(int argc, char *argv[])
 {
+    // test opencv
+    wrapper_main(argc, argv);
+
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())

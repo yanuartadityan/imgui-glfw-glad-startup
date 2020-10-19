@@ -1,5 +1,6 @@
 get_filename_component(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 set(MODULES_INCLUDE_DIR ${THIRD_PARTY_DIR}/modules)
+find_package(OpenCV REQUIRED)
 
 message(${THIRD_PARTY_DIR})
 message(${MODULES_INCLUDE_DIR})
@@ -21,10 +22,11 @@ list(APPEND MAIN_APP_SOURCES
     )
 
 set(NAME imgui-glfw-glad-project)
-add_executable(${NAME} ${MAIN_APP_SOURCES})
+add_executable(${NAME} ${MAIN_APP_SOURCES} cv_video.h cv_video.cpp)
 target_include_directories(${NAME} PUBLIC ${MAIN_APP_INCLUDE_DIRS})
 target_link_libraries(${NAME} 
     imgui
     glfw
+    ${OpenCV_LIBS}
     )
 
