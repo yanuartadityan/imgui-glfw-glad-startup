@@ -7,6 +7,3 @@
 [submodule "modules/glad"]
 	path = modules/glad
 	url = https://github.com/Dav1dde/glad.git
-[submodule "modules/opencv"]
-	path = modules/opencv
-	url = https://github.com/opencv/opencv.git
