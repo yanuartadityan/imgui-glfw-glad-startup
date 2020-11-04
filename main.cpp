@@ -1,9 +1,14 @@
-#include "imgui.h"
-#include "examples/imgui_impl_glfw.h"
-#include "examples/imgui_impl_opengl3.h"
+//
+// Created by Yanuar Nugraha on 04/11/20.
+//
+
 #include <cstdio>
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "examples/imgui_impl_glfw.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include "cv_video.h"
 
 
@@ -12,7 +17,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-void StyleColorsSofty(ImGuiStyle* dst = NULL);
+void StyleColorsSofty(ImGuiStyle* dst = nullptr);
 
 int main(int argc, char *argv[])
 {
@@ -29,7 +34,7 @@ int main(int argc, char *argv[])
 #if __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    GLFWwindow* window = glfwCreateWindow(2560, 1440, "ImGui GLFW+OpenGL3 example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(2560, 1440, "ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 

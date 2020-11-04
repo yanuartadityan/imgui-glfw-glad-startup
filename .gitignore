@@ -6,3 +6,4 @@ cmake-build-debug
 */__pycache__
 */vscode
 imgui.ini
+.cache/

@@ -16,6 +16,7 @@ Now, by default the build chain used is for **Unix Makefiles**, but feel free to
 * GLFW
 * Imgui
 * CMake
+* OpenCV
 
 This project is inspired from [https://github.com/urddru/imgui-glfw](https://github.com/urddru/imgui-glfw)
 
