@@ -10,7 +10,6 @@ make
 cp -R include/* ../../../src
 cp src/glad.c ../../../src/glad/glad.c
 
-
 cd ../../../
 
 mkdir -p build

@@ -1,8 +1,8 @@
-build
-.idea
-.vscode
+build/
+.idea/
+.vscode/
 cmake-build-debug
-./build
-./__pycache__
-./vscode
+*/build
+*/__pycache__
+*/vscode
 imgui.ini
