@@ -7,8 +7,8 @@ cd modules/glad/build
 cmake .. -G "$GENERATOR"
 make
 
-cp -R include/* ../../../src
-cp src/glad.c ../../../src/glad/glad.c
+cp -R include/* ../../../sources
+cp src/glad.c ../../../sources/glad/glad.c
 
 cd ../../../
 
