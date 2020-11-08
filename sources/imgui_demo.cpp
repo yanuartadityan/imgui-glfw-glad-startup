@@ -4,13 +4,13 @@
 
 #include <cstdio>
 #include <iostream>
-#include "imgui_demo.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "imgui_demo.h"
 #include "imgui_impl_opengl3.h"
 #include "examples/imgui_impl_glfw.h"
 
-
+/* constructors */
 Demo::Demo(){
     this->screen_x = 1920;
     this->screen_y = 1080;
@@ -29,8 +29,13 @@ Demo::Demo(int x, int y, bool show_demo_w, bool show_theme_w, bool show_another_
     this->show_another_window = show_another_w;
 }
 
+/* all static function definitions */
 void Demo::glfw_error_callback(int error, const char *description) {
     fprintf(stderr, "GLFW error %d: %s\n", error, description);
+}
+
+void Demo::glfw_framebuffer_size_callback(GLFWwindow* window, int width, int height){
+    glViewport(0, 0, width, height);
 }
 
 void Demo::style_color_softy(ImGuiStyle *dst=nullptr) {
@@ -105,6 +110,7 @@ void Demo::style_color_softy(ImGuiStyle *dst=nullptr) {
     style->Colors[ImGuiCol_ScrollbarGrabActive] = darker;
 }
 
+/* non-static */
 int Demo::init_glfw(int major, int minor) {
     // Setup window
     glfwSetErrorCallback(this->glfw_error_callback);
@@ -329,13 +335,30 @@ int Demo::play_demo(){
 }
 
 int Demo::play_demo_glfw_glad() {
-    if (!this->init_glfw(3, 3))
+    if (this->init_glfw(3, 3)) {
+        std::cout << "Failed on initializing" << std::endl;
         return EXIT_FAILURE;
+    }
 
     GLFWwindow* window = glfwCreateWindow(this->screen_x, this->screen_y, "Demo: OpenGL Only", nullptr, nullptr);
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);    // 0: vsync off, 1: vsync on
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
+    // set the viewport
+    glViewport(0, 0, this->screen_x, this->screen_y);
+
+    // handle user's resizing of the window
+    glfwSetFramebufferSizeCallback(window, this->glfw_framebuffer_size_callback);
+
+    // engine
+    while (!glfwWindowShouldClose(window)){
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // termination and cleaning
+    glfwTerminate();
 
     return EXIT_SUCCESS;
 }
