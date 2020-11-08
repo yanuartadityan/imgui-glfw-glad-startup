@@ -15,7 +15,7 @@ cd ../../../
 mkdir modules/opencv/build
 cd modules/opencv/build
 cmake .. -G "$GENERATOR"
-make
+make -j 8
 make install
 
 cd ../../../

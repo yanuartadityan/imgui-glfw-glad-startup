@@ -1,5 +1,7 @@
 set(MODULES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../modules)
 
+add_definitions(-DCPP_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../")
+
 find_package(OpenCV REQUIRED)
 
 list(APPEND MAIN_APP_INCLUDE_DIRS
@@ -11,6 +13,7 @@ list(APPEND MAIN_APP_INCLUDE_DIRS
 list(APPEND MAIN_APP_SOURCES
     imgui_impl_opengl3.h
     imgui_impl_opengl3.cpp
+    imgui_demo.cpp
     ${MODULES_INCLUDE_DIR}/imgui/examples/imgui_impl_glfw.h
     ${MODULES_INCLUDE_DIR}/imgui/examples/imgui_impl_glfw.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/glad/glad.h

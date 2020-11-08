@@ -4,8 +4,6 @@ project (imgui-glfw-glad)
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_BUILD_TYPE "Debug")
 
-add_definitions(-DCPP_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")
-
 set(APPEND MAIN_HEADER_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/imgui
     ${CMAKE_CURRENT_SOURCE_DIR}/sources)
