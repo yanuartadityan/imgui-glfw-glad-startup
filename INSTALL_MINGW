@@ -5,7 +5,7 @@ GENERATOR="MinGW Makefiles"
 mkdir modules/glad/build
 cd modules/glad/build
 cmake .. -G "$GENERATOR"
-make
+make -j8
 
 cp -R include/* ../../../sources
 cp src/glad.c ../../../sources/glad/glad.c

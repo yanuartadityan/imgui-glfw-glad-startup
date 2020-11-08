@@ -4,8 +4,11 @@
 
 #include <cstdio>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include "imgui_demo.h"
 #include "imgui_impl_opengl3.h"
 #include "examples/imgui_impl_glfw.h"
@@ -110,9 +113,14 @@ void Demo::style_color_softy(ImGuiStyle *dst=nullptr) {
     style->Colors[ImGuiCol_ScrollbarGrabActive] = darker;
 }
 
+void Demo::get_file_path(const std::string &fullPath, std::string &pathWithoutFile) {
+    size_t found = fullPath.find_last_of("/\\");
+    pathWithoutFile = fullPath.substr(0, found + 1);
+}
+
 /* non-static */
 int Demo::init_glfw(int major, int minor) {
-    // Setup window
+    // setup glfw
     glfwSetErrorCallback(this->glfw_error_callback);
     if (!glfwInit())
         return EXIT_FAILURE;
@@ -123,7 +131,135 @@ int Demo::init_glfw(int major, int minor) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+    // create main window
+    this->main_window = glfwCreateWindow(this->screen_x, this->screen_y, "Demo: OpenGL Only", nullptr, nullptr);
+
     return EXIT_SUCCESS;
+}
+
+void Demo::process_input() {
+    if(glfwGetKey(this->main_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(this->main_window, true);
+}
+
+std::string Demo::load_shader(const std::string fpath, std::string inc_identifier) {
+    inc_identifier += ' ';
+    static bool is_recurse = false;
+
+    std::string full_shaders_code;
+    std::ifstream file(fpath);
+
+    if (!file.is_open()){
+        std::cerr << "error:load:shader:could_not_open_the_shader_at: " << fpath << std::endl;
+        return full_shaders_code;
+    }
+
+    // iterate all lines
+    std::string lineBuf;
+    while (std::getline(file, lineBuf)){
+        // look for #include identifier
+        if (lineBuf.find(inc_identifier) != lineBuf.npos){
+            // found it, remove the identifier, then recursively find the code
+            lineBuf.erase(0, inc_identifier.size());
+
+            // traverse
+            std::string path_of_this_file;
+            Demo::get_file_path(fpath, path_of_this_file);
+            lineBuf.insert(0, path_of_this_file);
+
+            // going in
+            is_recurse = true;
+            full_shaders_code += Demo::load_shader(lineBuf);
+
+            continue;
+        }
+
+        full_shaders_code += lineBuf + '\n';
+    }
+
+    if (!is_recurse)
+        full_shaders_code += '\0';
+
+    file.close();
+
+    return full_shaders_code;
+}
+
+void Demo::set_vertices(float* vertices, int length) {
+    this->vertices_to_draw = new float (length);
+    this->vertices_to_draw = vertices;
+}
+
+void Demo::draw_shapes(float* vertices, int length){
+    this->set_vertices(vertices, length);
+
+    // vertex buffer object (VBO), type of buffer that can store a large
+    // number of vertices in GPU's memory --- !TODO: remember
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+
+    // 0. bind the buffer and copy all the data
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices_to_draw), this->vertices_to_draw, GL_STATIC_DRAW);
+
+    // 1. set vertex attributes
+    glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // --- optional: create vertex shader
+    const std::string vertexShaderSource = Demo::load_shader("../sources/shaders/shader.vs");
+
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    const char *vertex_str = vertexShaderSource.c_str();
+    glShaderSource(vertexShader, 1,&vertex_str, nullptr);
+    glCompileShader(vertexShader);
+
+    int success;
+    char infoLogVertex[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success){
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLogVertex);
+        std::cout << "error:shader:vertex:compilation_failed\n" << infoLogVertex << std::endl;
+    }
+
+    // create fragment shader
+    const std::string fragShaderSource = Demo::load_shader("../sources/shaders/fragment.vs");
+
+    unsigned int fragShader;
+    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const char *frag_str = fragShaderSource.c_str();
+    glShaderSource(fragShader, 1, &frag_str, nullptr);
+    glCompileShader(fragShader);
+
+    char infoLogFrag[512];
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+    if (!success){
+        glGetShaderInfoLog(fragShader, 512, nullptr, infoLogFrag);
+        std::cout << "error:shader:fragment:compilation_failed\n" << infoLogFrag << std::endl;
+    }
+
+    // create program and link both vertex and fragments shaders
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragShader);
+    glLinkProgram(shaderProgram);
+
+    char infoLogProg[512];
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success){
+        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLogProg);
+        std::cout << "error:program:link_failed\n" << infoLogProg << std::endl;
+    }
+
+    // 3. use the program
+    glUseProgram(shaderProgram);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragShader);
+
+    // 4. draw the shits
+
 }
 
 int Demo::play_demo(){
@@ -335,13 +471,21 @@ int Demo::play_demo(){
 }
 
 int Demo::play_demo_glfw_glad() {
+
+    float input_vertices[] = {
+            0.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f,
+            0.5f, 1.0f, 0.5f
+    };
+
     if (this->init_glfw(3, 3)) {
         std::cout << "Failed on initializing" << std::endl;
         return EXIT_FAILURE;
     }
 
-    GLFWwindow* window = glfwCreateWindow(this->screen_x, this->screen_y, "Demo: OpenGL Only", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(this->main_window);
     glfwSwapInterval(1);    // 0: vsync off, 1: vsync on
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
@@ -349,11 +493,22 @@ int Demo::play_demo_glfw_glad() {
     glViewport(0, 0, this->screen_x, this->screen_y);
 
     // handle user's resizing of the window
-    glfwSetFramebufferSizeCallback(window, this->glfw_framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(this->main_window, this->glfw_framebuffer_size_callback);
+
+    // set vertices to draw
+    this->draw_shapes(input_vertices, sizeof(input_vertices)/sizeof(input_vertices[0]));
 
     // engine
-    while (!glfwWindowShouldClose(window)){
-        glfwSwapBuffers(window);
+    while (!glfwWindowShouldClose(this->main_window)){
+        // process key input
+        this->process_input();
+
+        // rendering
+        glClearColor(0.925f, 0.250f, 0.375f, 0.5f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // before finishing current frame
+        glfwSwapBuffers(this->main_window);
         glfwPollEvents();
     }
 
@@ -362,5 +517,4 @@ int Demo::play_demo_glfw_glad() {
 
     return EXIT_SUCCESS;
 }
-
 

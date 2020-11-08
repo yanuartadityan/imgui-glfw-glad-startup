@@ -10,3 +10,6 @@
 [submodule "modules/opencv"]
 	path = modules/opencv
 	url = https://github.com/opencv/opencv.git
+[submodule "modules/glm"]
+	path = modules/glm
+	url = https://github.com/g-truc/glm.git

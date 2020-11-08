@@ -7,6 +7,7 @@ find_package(OpenCV REQUIRED)
 list(APPEND MAIN_APP_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${MODULES_INCLUDE_DIR}/imgui
+    ${MODULES_INCLUDE_DIR}/glm
     ${OpenCV_INCLUDE_DIRS}
     )
 
@@ -26,5 +27,5 @@ list(APPEND MAIN_APP_SOURCES
 set(NAME applib)
 add_library(${NAME} ${MAIN_APP_SOURCES})
 target_include_directories(${NAME} PUBLIC ${MAIN_APP_INCLUDE_DIRS})
-target_link_libraries(${NAME} imgui glfw ${OpenCV_LIBS})
+target_link_libraries(${NAME} imgui glfw glm ${OpenCV_LIBS})
 
