@@ -26,8 +26,8 @@ public:
     int init_glfw(int major, int minor);
     void process_input();
     void set_vertices(float*, int);
-    void draw_shapes(float*, int);
-    std::string load_shader(const std::string path, std::string inc_identifier="#include");
+    void draw_shapes(float*, int, unsigned int&, unsigned int&, unsigned int&, unsigned int&, unsigned int&);
+    std::string load_shader(std::string path, std::string inc_identifier="#include");
     int play_demo();
     int play_demo_glfw_glad();
 

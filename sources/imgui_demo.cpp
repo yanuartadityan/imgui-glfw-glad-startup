@@ -190,35 +190,28 @@ void Demo::set_vertices(float* vertices, int length) {
     this->vertices_to_draw = vertices;
 }
 
-void Demo::draw_shapes(float* vertices, int length){
+void Demo::draw_shapes(float* vertices, int length,
+                       unsigned int& shaderProgram,
+                       unsigned int& vertexShader,
+                       unsigned int& fragShader,
+                       unsigned int& VAO,
+                       unsigned int& VBO)
+{
     this->set_vertices(vertices, length);
-
-    // vertex buffer object (VBO), type of buffer that can store a large
-    // number of vertices in GPU's memory --- !TODO: remember
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-
-    // 0. bind the buffer and copy all the data
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices_to_draw), this->vertices_to_draw, GL_STATIC_DRAW);
-
-    // 1. set vertex attributes
-    glVertexAttribPointer(0,3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
 
     // --- optional: create vertex shader
     const std::string vertexShaderSource = Demo::load_shader("../sources/shaders/shader.vs");
 
-    unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     const char *vertex_str = vertexShaderSource.c_str();
-    glShaderSource(vertexShader, 1,&vertex_str, nullptr);
+    std::cout << vertex_str << std::endl;
+    glShaderSource(vertexShader, 1, &vertex_str, nullptr);
     glCompileShader(vertexShader);
 
     int success;
     char infoLogVertex[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success){
+    if (!success) {
         glGetShaderInfoLog(vertexShader, 512, nullptr, infoLogVertex);
         std::cout << "error:shader:vertex:compilation_failed\n" << infoLogVertex << std::endl;
     }
@@ -226,21 +219,20 @@ void Demo::draw_shapes(float* vertices, int length){
     // create fragment shader
     const std::string fragShaderSource = Demo::load_shader("../sources/shaders/fragment.vs");
 
-    unsigned int fragShader;
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
     const char *frag_str = fragShaderSource.c_str();
+    std::cout << frag_str << std::endl;
     glShaderSource(fragShader, 1, &frag_str, nullptr);
     glCompileShader(fragShader);
 
     char infoLogFrag[512];
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-    if (!success){
+    if (!success) {
         glGetShaderInfoLog(fragShader, 512, nullptr, infoLogFrag);
         std::cout << "error:shader:fragment:compilation_failed\n" << infoLogFrag << std::endl;
     }
 
     // create program and link both vertex and fragments shaders
-    unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragShader);
@@ -248,18 +240,28 @@ void Demo::draw_shapes(float* vertices, int length){
 
     char infoLogProg[512];
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success){
+    if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLogProg);
         std::cout << "error:program:link_failed\n" << infoLogProg << std::endl;
     }
 
-    // 3. use the program
-    glUseProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragShader);
+    // vertex buffer object (VBO), type of buffer that can store a large
+    // number of vertices in GPU's memory --- !TODO: remember
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    // 4. draw the shits
+    // 0. bind VAO first, then buffer object and copy all the data
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices_to_draw), this->vertices_to_draw, GL_STATIC_DRAW);
 
+    // 1. set vertex attributes
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+
+    // 2. unbind
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
 int Demo::play_demo(){
@@ -472,12 +474,17 @@ int Demo::play_demo(){
 
 int Demo::play_demo_glfw_glad() {
 
+//    float input_vertices[] = {
+//            0.0f, 0.0f, 0.0f,
+//            1.0f, 0.0f, 0.0f,
+//            1.0f, 0.0f, 1.0f,
+//            0.0f, 0.0f, 1.0f,
+//            0.5f, 1.0f, 0.5f
+//    };
     float input_vertices[] = {
-            0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.5f, 1.0f, 0.5f
+            -0.5f, -0.5f, 0.0f, // left
+            0.5f, -0.5f, 0.0f, // right
+            0.0f,  0.5f, 0.0f  // top
     };
 
     if (this->init_glfw(3, 3)) {
@@ -496,7 +503,19 @@ int Demo::play_demo_glfw_glad() {
     glfwSetFramebufferSizeCallback(this->main_window, this->glfw_framebuffer_size_callback);
 
     // set vertices to draw
-    this->draw_shapes(input_vertices, sizeof(input_vertices)/sizeof(input_vertices[0]));
+    unsigned int shaderProgram, vertexShader, fragShader, VAO, VBO;
+    this->draw_shapes(input_vertices,
+                      sizeof(input_vertices)/sizeof(input_vertices[0]),
+                      shaderProgram,
+                      vertexShader,
+                      fragShader,
+                      VAO,
+                      VBO
+                      );
+
+    // clean shaders (if not to be used anymore)
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragShader);
 
     // engine
     while (!glfwWindowShouldClose(this->main_window)){
@@ -504,8 +523,12 @@ int Demo::play_demo_glfw_glad() {
         this->process_input();
 
         // rendering
-        glClearColor(0.925f, 0.250f, 0.375f, 0.5f);
+        glClearColor(0.25f, 0.250f, 0.375f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // before finishing current frame
         glfwSwapBuffers(this->main_window);
@@ -513,6 +536,9 @@ int Demo::play_demo_glfw_glad() {
     }
 
     // termination and cleaning
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
     glfwTerminate();
 
     return EXIT_SUCCESS;
