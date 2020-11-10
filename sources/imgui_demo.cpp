@@ -13,10 +13,11 @@
 #include "imgui_impl_opengl3.h"
 #include "examples/imgui_impl_glfw.h"
 
+
 /* constructors */
 Demo::Demo(){
-    this->screen_x = 1920;
-    this->screen_y = 1080;
+    this->screen_x = 1280;
+    this->screen_y = 1024;
 }
 
 Demo::Demo(int x, int y){
@@ -118,31 +119,7 @@ void Demo::get_file_path(const std::string &fullPath, std::string &pathWithoutFi
     pathWithoutFile = fullPath.substr(0, found + 1);
 }
 
-/* non-static */
-int Demo::init_glfw(int major, int minor) {
-    // setup glfw
-    glfwSetErrorCallback(this->glfw_error_callback);
-    if (!glfwInit())
-        return EXIT_FAILURE;
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#if __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    // create main window
-    this->main_window = glfwCreateWindow(this->screen_x, this->screen_y, "Demo: OpenGL Only", nullptr, nullptr);
-
-    return EXIT_SUCCESS;
-}
-
-void Demo::process_input() {
-    if(glfwGetKey(this->main_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(this->main_window, true);
-}
-
-std::string Demo::load_shader(const std::string fpath, std::string inc_identifier) {
+std::string Demo::load_shader(const std::string& fpath, std::string inc_identifier) {
     inc_identifier += ' ';
     static bool is_recurse = false;
 
@@ -185,22 +162,60 @@ std::string Demo::load_shader(const std::string fpath, std::string inc_identifie
     return full_shaders_code;
 }
 
-void Demo::set_vertices(float* vertices, int length) {
-    this->vertices_to_draw = new float (length);
-    this->vertices_to_draw = vertices;
+/* non-static */
+int Demo::init_glfw(int major, int minor) {
+    // setup glfw
+    glfwSetErrorCallback(this->glfw_error_callback);
+    if (!glfwInit())
+        return EXIT_FAILURE;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    // create main window
+    this->main_window = glfwCreateWindow(this->screen_x, this->screen_y, "Demo: OpenGL Only", nullptr, nullptr);
+
+    return EXIT_SUCCESS;
 }
 
-void Demo::draw_shapes(float* vertices, int length,
-                       unsigned int& shaderProgram,
-                       unsigned int& vertexShader,
-                       unsigned int& fragShader,
-                       unsigned int& VAO,
-                       unsigned int& VBO)
-{
-    this->set_vertices(vertices, length);
+int Demo::init_glad(){
+    gladLoadGL();
 
+    return EXIT_SUCCESS;
+}
+
+void Demo::process_input() {
+    if(glfwGetKey(this->main_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(this->main_window, true);
+}
+
+void Demo::set_context_window(GLFWwindow* handle){
+    glfwMakeContextCurrent(handle);
+}
+
+void Demo::set_vsync(int vsync_state){
+    glfwSwapInterval(vsync_state);
+}
+
+void Demo::set_viewport(int x_origin, int y_origin){
+    // set the viewport
+    std::cout << "Setting the viewport:..." << std::endl;
+    std::cout << "Width of the screen: " << this->screen_x << std::endl;
+    std::cout << "Height of the screen: " << this->screen_y << std::endl;
+    glViewport(x_origin, y_origin, this->screen_x, this->screen_y);
+}
+
+void Demo::set_shaders(unsigned int& shaderProgram,
+                       unsigned int& vertexShader,
+                       const std::string& vertexShaderPath,
+                       unsigned int& fragShader,
+                       const std::string& fragShaderPath)
+{
     // --- optional: create vertex shader
-    const std::string vertexShaderSource = Demo::load_shader("../sources/shaders/shader.vs");
+    const std::string vertexShaderSource = Demo::load_shader(vertexShaderPath);
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     const char *vertex_str = vertexShaderSource.c_str();
@@ -217,7 +232,7 @@ void Demo::draw_shapes(float* vertices, int length,
     }
 
     // create fragment shader
-    const std::string fragShaderSource = Demo::load_shader("../sources/shaders/fragment.vs");
+    const std::string fragShaderSource = Demo::load_shader(fragShaderPath);
 
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
     const char *frag_str = fragShaderSource.c_str();
@@ -245,22 +260,33 @@ void Demo::draw_shapes(float* vertices, int length,
         std::cout << "error:program:link_failed\n" << infoLogProg << std::endl;
     }
 
-    // vertex buffer object (VBO), type of buffer that can store a large
-    // number of vertices in GPU's memory --- !TODO: remember
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragShader);
+}
+
+void Demo::set_buffers(float *input_vertices, size_t vertices_size){
+//    float input_vertices[] = {
+//            -0.5f, -0.5f, 0.0f, // left
+//            0.5f, -0.5f, 0.0f, // right
+//            0.0f,  0.5f, 0.0f  // top
+//    };
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-
-    // 0. bind VAO first, then buffer object and copy all the data
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices_to_draw), this->vertices_to_draw, GL_STATIC_DRAW);
 
-    // 1. set vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices_size, input_vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // 2. unbind
+    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 }
 
@@ -268,8 +294,8 @@ int Demo::play_demo(){
     // setup glfw
     this->init_glfw(3, 3);
 
-    GLFWwindow* window = glfwCreateWindow(this->screen_x, this->screen_y, "ImGui GLFW+OpenGL3 example", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
+//    GLFWwindow* window = glfwCreateWindow(this->screen_x, this->screen_y, "ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    glfwMakeContextCurrent(this->main_window);
     glfwSwapInterval(0); // Enable vsync
 
     // load GL binders (either GLAD, GL3W or OpenGL)
@@ -282,7 +308,7 @@ int Demo::play_demo(){
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(this->main_window, true);
     ImGui_ImplOpenGL3_Init();
 
     // Setup style
@@ -315,7 +341,7 @@ int Demo::play_demo(){
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(this->main_window))
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -450,15 +476,15 @@ int Demo::play_demo(){
         // Rendering
         ImGui::Render();
         int display_w, display_h;
-        glfwMakeContextCurrent(window);
-        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glfwMakeContextCurrent(this->main_window);
+        glfwGetFramebufferSize(this->main_window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwMakeContextCurrent(window);
-        glfwSwapBuffers(window);
+        glfwMakeContextCurrent(this->main_window);
+        glfwSwapBuffers(this->main_window);
     }
 
     // Cleanup
@@ -466,7 +492,7 @@ int Demo::play_demo(){
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(this->main_window);
     glfwTerminate();
 
     return 0;
@@ -474,13 +500,6 @@ int Demo::play_demo(){
 
 int Demo::play_demo_glfw_glad() {
 
-//    float input_vertices[] = {
-//            0.0f, 0.0f, 0.0f,
-//            1.0f, 0.0f, 0.0f,
-//            1.0f, 0.0f, 1.0f,
-//            0.0f, 0.0f, 1.0f,
-//            0.5f, 1.0f, 0.5f
-//    };
     float input_vertices[] = {
             -0.5f, -0.5f, 0.0f, // left
             0.5f, -0.5f, 0.0f, // right
@@ -488,34 +507,37 @@ int Demo::play_demo_glfw_glad() {
     };
 
     if (this->init_glfw(3, 3)) {
-        std::cout << "Failed on initializing" << std::endl;
+        std::cout << "Failed on initializing GLFW" << std::endl;
         return EXIT_FAILURE;
     }
 
-    glfwMakeContextCurrent(this->main_window);
-    glfwSwapInterval(1);    // 0: vsync off, 1: vsync on
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    this->set_context_window(this->main_window);
+    this->set_vsync(1);     // 0: vsync-off, 1: vsync-on
 
-    // set the viewport
-    glViewport(0, 0, this->screen_x, this->screen_y);
+    if (this->init_glad()){
+        std:: cout << "Failed on initializing GLAD" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    this->set_viewport(0, 0);
 
     // handle user's resizing of the window
     glfwSetFramebufferSizeCallback(this->main_window, this->glfw_framebuffer_size_callback);
 
-    // set vertices to draw
-    unsigned int shaderProgram, vertexShader, fragShader, VAO, VBO;
-    this->draw_shapes(input_vertices,
-                      sizeof(input_vertices)/sizeof(input_vertices[0]),
-                      shaderProgram,
+    // shaders
+    unsigned int shaderProgram, vertexShader, fragmentShader;
+    this->set_shaders(shaderProgram,
                       vertexShader,
-                      fragShader,
-                      VAO,
-                      VBO
-                      );
+                      "../sources/shaders/shader.vs",
+                      fragmentShader,
+                      "../sources/shaders/fragment.vs");
 
-    // clean shaders (if not to be used anymore)
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragShader);
+
+    // buffer, vao, vbo
+    this->set_buffers(input_vertices, sizeof(input_vertices));
+
+    // uncomment this call to draw in wireframe polygons.
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // engine
     while (!glfwWindowShouldClose(this->main_window)){
@@ -523,7 +545,7 @@ int Demo::play_demo_glfw_glad() {
         this->process_input();
 
         // rendering
-        glClearColor(0.25f, 0.250f, 0.375f, 1.0f);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
@@ -537,7 +559,6 @@ int Demo::play_demo_glfw_glad() {
 
     // termination and cleaning
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
     glDeleteProgram(shaderProgram);
     glfwTerminate();
 

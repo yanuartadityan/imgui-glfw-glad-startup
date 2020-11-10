@@ -5,9 +5,8 @@
 
 int main(int argc, char *argv[])
 {
-    Demo app(1680, 1050, true, true, false);
+    Demo app;
     app.play_demo_glfw_glad();
-    // app.play_demo();
 
     return EXIT_SUCCESS;
 }
