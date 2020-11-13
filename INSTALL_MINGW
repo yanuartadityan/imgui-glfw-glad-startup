@@ -1,6 +1,8 @@
 #! /usr/bin/env bash
 
 GENERATOR="MinGW Makefiles"
+
+# always update your mingw path
 MINGW_PREFIX="/c/mingw64-8.0.0-r3/x86_64-w64-mingw32/"
 
 # install glad and copy src files to main source dir
