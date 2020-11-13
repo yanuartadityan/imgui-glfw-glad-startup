@@ -1,17 +1,32 @@
 #! /usr/bin/env bash
 
 GENERATOR="MinGW Makefiles"
+MINGW_PREFIX="/c/mingw64-8.0.0-r3/x86_64-w64-mingw32/"
 
+# install glad and copy src files to main source dir
 mkdir modules/glad/build
 cd modules/glad/build
 cmake .. -G "$GENERATOR"
-make -j8
+mingw32-make -j8
 
 cp -R include/* ../../../sources
 cp src/glad.c ../../../sources/glad/glad.c
 
+# back to main dir
 cd ../../../
 
+# install opencv and install opencv
+mkdir modules/opencv/build 
+cd modules/opencv/build
+cmake .. -G "$GENERATOR" -DCMAKE_INSTALL_PREFIX="$MINGW_PREFIX" -DOPENCV_ALLOCATOR_STATS_COUNTER_TYPE=int64_t
+mingw32-make -j8
+mingw32-make install
+
+# back to main dir
+cd ../../../
+
+# build the main app
 mkdir -p build
 cd build
 cmake .. -G "$GENERATOR"
+mingw32-make -j8
