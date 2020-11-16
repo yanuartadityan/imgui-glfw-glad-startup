@@ -279,7 +279,7 @@ void Demo::set_buffers(float *input_vertices, size_t vertices_size){
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices_size, input_vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
     glEnableVertexAttribArray(0);
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -294,7 +294,6 @@ int Demo::play_demo(){
     // setup glfw
     this->init_glfw(3, 3);
 
-//    GLFWwindow* window = glfwCreateWindow(this->screen_x, this->screen_y, "ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     glfwMakeContextCurrent(this->main_window);
     glfwSwapInterval(0); // Enable vsync
 
@@ -500,10 +499,16 @@ int Demo::play_demo(){
 
 int Demo::play_demo_glfw_glad() {
 
+//    float input_vertices[] = {
+//            -0.5f, -0.5f, 0.0f, // left
+//            0.5f, -0.5f, 0.0f, // right
+//            0.0f,  0.5f, 0.0f  // top
+//    };
     float input_vertices[] = {
             -0.5f, -0.5f, 0.0f, // left
             0.5f, -0.5f, 0.0f, // right
-            0.0f,  0.5f, 0.0f  // top
+            0.5f, 0.5f, 0.0f,
+            -0.5f,  0.5f, 0.0f  // top
     };
 
     if (this->init_glfw(3, 3)) {
@@ -548,9 +553,10 @@ int Demo::play_demo_glfw_glad() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // everything falls under glUserProgram will impacted by the shader programs
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
         // before finishing current frame
         glfwSwapBuffers(this->main_window);

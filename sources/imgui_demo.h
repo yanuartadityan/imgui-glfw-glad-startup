@@ -14,7 +14,7 @@ private:
     int screen_x, screen_y;
     GLFWwindow *main_window = nullptr;
     bool show_demo_window = true, show_theme_window = true, show_another_window = false;
-    unsigned int VAO, VBO;
+    unsigned int VAO=0, VBO=0;
 
 public:
     /* constructors */
